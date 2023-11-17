@@ -47,3 +47,36 @@ GROUP BY c.name
 
 
 ````
+
+## Задача 94
+
+Для семи последовательных дней, начиная от минимальной даты, когда из Ростова было совершено максимальное число рейсов, определить число рейсов из Ростова.
+
+Вывод: дата, количество рейсов 
+
+Используемые функции:
+
+Сложение дат:
+[INTERVAL](https://stackoverflow.com/questions/26979764/postgres-interval-using-value-from-table)
+
+[GENERATE_SERIES](https://database.guide/how-generate_series-works-in-postgresql/)
+
+```` sql
+WITH trips_by_dates AS
+(
+SELECT DISTINCT t.trip_no as tn,pt.date as date, t.town_from as tf ,t.time_out as time_out FROM Pass_in_trip pt LEFT JOIN Trip t ON t.trip_no = pt.trip_no
+WHERE t.town_from= 'Rostov'
+),
+
+qty_by_dates AS
+(
+SELECT date, COUNT(tn) as cnt FROM trips_by_dates
+GROUP BY date
+ORDER BY COUNT(tn) DESC, date ASC
+),
+dates AS
+(SELECT DISTINCT GENERATE_SERIES(
+(SELECT date FROM qty_by_dates LIMIT 1) , (SELECT date FROM qty_by_dates LIMIT 1) + INTERVAL '6 day','1 day') as date)
+
+SELECT d.date, COALESCE(qd.cnt , 0) as qty FROM dates d LEFT JOIN qty_by_dates qd ON d.date = qd.date
+````
