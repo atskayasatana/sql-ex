@@ -80,3 +80,40 @@ dates AS
 
 SELECT d.date, COALESCE(qd.cnt , 0) as qty FROM dates d LEFT JOIN qty_by_dates qd ON d.date = qd.date
 ````
+
+## Задача 95
+
+Задание: 95 (qwrqwr: 2013-02-08)
+
+На основании информации из таблицы Pass_in_Trip, для каждой авиакомпании определить:
+
+1) количество выполненных перелетов;
+   
+2) число использованных типов самолетов;
+   
+3) количество перевезенных различных пассажиров;
+   
+4) общее число перевезенных компанией пассажиров.
+   
+Вывод: Название компании, 1), 2), 3), 4).
+
+Комментарий: При подсчете рейсов учесть, что при соединении таблиц номера рейсов могут задублироваться по числу пассажиров.
+
+```` sql
+WITH trips AS(
+SELECt t.ID_comp as comp,
+COUNT( DISTINCT CONCAT(pit.trip_no, pit.date)) as f_count,
+COUNT(DISTINCT t.plane) as plane_type,
+COUNT(DISTINCT pit.ID_psg) as ps_count,
+COUNT(pit.ID_psg) as ttl_psg FROM Pass_in_trip pit LEFT JOIN Trip t ON pit.trip_no = t.trip_no
+GROUP BY t.ID_comp
+)
+
+SELECT c.name as company_name,
+t.f_count as flights,
+t.plane_type as planes,
+t.ps_count as diff_psngrs,
+t.ttl_psg as total_psngrs FROM trips t LEFT JOIN Company c ON c.ID_Comp=t.comp
+
+
+````
