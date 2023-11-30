@@ -117,3 +117,33 @@ t.ttl_psg as total_psngrs FROM trips t LEFT JOIN Company c ON c.ID_Comp=t.comp
 
 
 ````
+
+## Задача 96
+
+При условии, что баллончики с красной краской использовались более одного раза, 
+
+выбрать из них такие, которыми окрашены квадраты, имеющие голубую компоненту.
+
+Вывести название баллончика 
+
+```` sql
+WITH red_baloons AS
+(SELECT utb.B_V_ID as b_id, utv.V_COLOR as color, COUNT(utb.B_DATETIME) as used
+FROM utB utb LEFT JOIN utV utv ON utb.B_V_ID=utV.V_ID
+GROUP BY utb.B_V_ID,utv.V_COLOR
+HAVING utv.V_COLOR='R' AND COUNT(utb.B_DATETIME)>1),
+blue_q AS
+(SELECT utb.B_Q_ID as Q_id, utb.B_V_ID, utv.V_COLOR as clr, utv.V_NAME as b_name
+FROM utB utb LEFT JOIN utV utv ON utb.B_V_ID=utV.V_ID
+WHERE utv.V_COLOR = 'B'
+)
+
+SELECT DISTINCT V_NAME FROM utB utb LEFT JOIN utV utv ON utb.B_V_ID=utV.V_ID
+WHERE 
+B_Q_ID IN
+(SELECT Q_id FROM blue_q)
+AND V_ID IN
+(SELECT b_id FROM red_baloons)
+
+````
+
