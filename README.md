@@ -147,3 +147,53 @@ AND V_ID IN
 
 ````
 
+Задание: 97 (qwrqwr: 2013-02-15)
+
+Отобрать из таблицы Laptop те строки, для которых выполняется следующее условие:
+
+значения из столбцов speed, ram, price, screen возможно расположить таким образом, что каждое последующее значение будет превосходить предыдущее в 2 раза или более.
+
+Замечание: все известные характеристики ноутбуков больше нуля.
+
+Вывод: code, speed, ram, price, screen.
+
+
+
+````sql
+
+WITH unpivoted_data AS
+(SELECT code, param, info 
+FROM
+(SELECT 
+      CAST (code AS FLOAT) code, 
+      CAST (speed AS FLOAT) speed, 
+      CAST (price AS FLOAT) price, 
+      CAST (ram AS FLOAT) ram, 
+      CAST (screen AS FLOAT) screen 
+ FROM Laptop) t
+UNPIVOT
+(info FOR param IN(speed, price, ram, screen))upv
+),
+unpivoted_ranked AS
+(
+SELECT code, 
+       param, 
+       info,
+       RANK() OVER(PARTITION BY code ORDER BY info) r_info FROM unpivoted_data
+)
+
+SELECT code, speed, ram, price, screen FROM Laptop 
+WHERE code IN(
+SELECT code FROM 
+(
+SELECT code,[1],[2],[3],[4] FROM 
+(SELECT code, info, r_info FROM unpivoted_ranked) t
+PIVOT
+(MIN(info) FOR r_info IN([1],[2],[3],[4])) pvt
+WHERE [1]*2<=[2] AND [2]*2<=[3] AND [3]*2<=[4]
+) t
+)
+
+
+````
+
