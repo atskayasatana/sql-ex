@@ -197,3 +197,59 @@ WHERE [1]*2<=[2] AND [2]*2<=[3] AND [3]*2<=[4]
 
 ````
 
+## Задание 99
+Рассматриваются только таблицы Income_o и Outcome_o. Известно, что прихода/расхода денег в воскресенье не бывает.
+
+Для каждой даты прихода денег на каждом из пунктов определить дату инкассации по следующим правилам:
+
+1. Дата инкассации совпадает с датой прихода, если в таблице Outcome_o нет записи о выдаче денег в эту дату на этом пункте.
+   
+2. В противном случае - первая возможная дата после даты прихода денег, которая не является воскресеньем и в Outcome_o не отмечена выдача денег сдатчикам вторсырья в эту дату на этом пункте.
+   
+Вывод: пункт, дата прихода денег, дата инкассации.
+
+Комментарий: решение достаточно примитивное, создаем диапазон дат для каждой даты прихода и оставляем только те, которые не воскресение и в которые не было расхода.
+
+
+```` sql
+WITH date_calc AS
+(SELECT 0 as cnt, 
+        point,
+        date, 
+        inc,
+        date+0 AS next_date, 
+        DATENAME(dw, date) AS out_dw 
+ FROM Income_o
+UNION ALL
+SELECT cnt+1,
+       point,
+       date,
+       inc,
+      date + cnt,
+     DATENAME(dw, date + cnt) AS out_dw        
+FROM date_calc
+WHERE cnt<100
+),
+dates_calculated AS
+(
+SELECT dc.point,
+       dc.date AS inc_date, 
+       dc.inc AS income, 
+       dc.next_date as next_date,
+       dc.out_dw AS day_of_week, 
+       out.point AS o_pnt, 
+       out.date AS o_date, 
+       out.out AS out_m,
+       ROW_NUMBER() OVER (PARTITION BY CONCAT(dc.point, dc.date) ORDER BY dc.date) as d_rnk 
+FROM date_calc dc FULL JOIN Outcome_o out ON dc.point=out.point AND dc.next_date=out.date
+WHERE dc.out_dw <> 'Sunday' AND out.out IS NULL
+)
+
+SELECT dc.point AS point, dc.inc_date AS DP, dc.next_date AS DI FROM dates_calculated dc WHERE d_rnk = 1
+
+````
+
+
+
+
+
