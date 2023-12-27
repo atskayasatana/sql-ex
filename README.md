@@ -249,6 +249,41 @@ SELECT dc.point AS point, dc.inc_date AS DP, dc.next_date AS DI FROM dates_calcu
 
 ````
 
+## Задача 102
+
+Определить имена разных пассажиров, которые летали
+
+только между двумя городами (туда и/или обратно).
+
+```` sql
+WITH flights_history AS
+(
+SELECT pit.ID_psg as pid,
+       t.town_from as town
+       FROM Pass_in_trip pit LEFT JOIN Trip t 
+ON pit.trip_no = t.trip_no
+
+UNION 
+
+SELECT pit.ID_psg as pid,
+       t.town_to as town
+       FROM Pass_in_trip pit LEFT JOIN Trip t 
+ON pit.trip_no = t.trip_no
+),
+pid_2 AS
+(
+SELECT pid, COUNT(DISTINCT town) as t_cnt FROM flights_history
+GROUP BY pid
+HAVING COUNT(DISTINCT town)=2)
+
+SELECT name FROM Passenger 
+WHERE ID_Psg IN
+(SELECT pid FROM pid_2)
+````
+
+
+
+
 
 
 
