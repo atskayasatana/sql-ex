@@ -248,6 +248,46 @@ WHERE dc.out_dw <> 'Sunday' AND out.out IS NULL
 SELECT dc.point AS point, dc.inc_date AS DP, dc.next_date AS DI FROM dates_calculated dc WHERE d_rnk = 1
 
 ````
+## Задача 101
+
+Таблица Printer сортируется по возрастанию поля code
+
+Упорядоченные строки составляют группы: первая группа начинается с первой строки, каждая строка со значением color='n' начинает новую группу, группы строк не перекрываются.
+
+Для каждой группы определить: наибольшее значение поля model (max_model), количество уникальных типов принтеров (distinct_types_cou) и среднюю цену (avg_price).
+
+Для всех строк таблицы вывести: code, model, color, type, price, max_model, distinct_types_cou, avg_price. 
+
+```` sql
+WITH 
+printers_ranked AS
+(SELECT code,
+        model,
+        color,
+        type,
+        price, 
+        (SELECT COUNT(color) FROM Printer WHERE color = 'n' AND code<=p.code) as gr
+FROM Printer p)
+
+SELECT p.code, 
+       p.model, 
+       p.color, 
+       p.type,
+       p.price,
+       p_gr.max_model,
+       p_gr.distinct_types_cou,
+       p_gr.avg_price
+FROM printers_ranked p LEFT JOIN 
+(SELECT 
+gr,MAX(model) as max_model,
+COUNT(DISTINCT type) as distinct_types_cou,
+AVG(price) AS avg_price
+FROM printers_ranked pr
+GROUP BY gr) p_gr
+ON p.gr = p_gr.gr
+````
+
+
 
 ## Задача 102
 
