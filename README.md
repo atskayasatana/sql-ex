@@ -281,6 +281,25 @@ WHERE ID_Psg IN
 (SELECT pid FROM pid_2)
 ````
 
+## Задача 103
+
+Выбрать три наименьших и три наибольших номера рейса. Вывести их в шести столбцах одной строки, расположив в порядке от наименьшего к наибольшему.
+
+Замечание: считать, что таблица Trip содержит не менее шести строк. 
+
+```` sql
+SELECT MIN(t.trip_no) as min1, 
+       MIN(t2.trip_no) as min2, 
+       MIN(t3.trip_no) as min3, 
+       MAX(t.trip_no) as max1,
+       MAX(t2.trip_no) as max2,
+       MAX(t3.trip_no) as max3
+FROM Trip t, Trip t2, Trip t3
+WHERE t.trip_no<t2.trip_no AND t3.trip_no>t2.trip_no
+```
+
+
+
 
 
 
