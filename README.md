@@ -336,14 +336,30 @@ SELECT MIN(t.trip_no) as min1,
        MAX(t3.trip_no) as max3
 FROM Trip t, Trip t2, Trip t3
 WHERE t.trip_no<t2.trip_no AND t3.trip_no>t2.trip_no
-```
+````
 
+##  Задача 104
 
+Для каждого класса крейсеров, число орудий которого известно, пронумеровать (последовательно от единицы) все орудия.
 
+Вывод: имя класса, номер орудия в формате 'bc-N'. 
 
+```` sql
+WITH max_num_bc_guns AS
+(SELECT MAX(numGuns) as mn FROM Classes WHERE type = 'bc'),
+recursive AS
+(SELECT 1 as n, class, type, numGuns FROM Classes
+WHERE type = 'bc'
+ UNION ALL
+ SELECT n+1,
+        class,
+        type, numGuns FROM recursive
+WHERE n<= (SELECT mn FROM max_num_bc_guns)
+  )
 
+SELECT class, CONCAT('bc-',n) as num FROM recursive
+WHERE n<=numGuns
+ORDER BY class
 
-
-
-
+````
 
