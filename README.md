@@ -394,3 +394,41 @@ FROM Product
 
 ````
 
+## Задача 106
+
+Пусть v1, v2, v3, v4, ... представляет последовательность вещественных чисел - объемов окрасок b_vol, упорядоченных по возрастанию b_datetime, b_q_id, b_v_id.
+
+Найти преобразованную последовательность P1=v1, P2=v1/v2, P3=v1/v2*v3, P4=v1/v2*v3/v4, ..., где каждый следующий член получается из предыдущего умножением на vi (при нечетных i) или делением на vi (при четных i).
+
+Результаты представить в виде b_datetime, b_q_id, b_v_id, b_vol, Pi, где Pi - член последовательности, соответствующий номеру записи i. Вывести Pi с 8-ю знаками после запятой. 
+
+```` sql
+WITH ranked_tbl AS
+(
+SELECT 
+       B_DATETIME,
+       B_Q_ID,
+       B_V_ID,
+       B_VOL,
+       ROW_NUMBER() OVER(ORDER BY B_DATETIME, B_Q_ID, B_V_ID, B_VOL) AS RN
+FROM utB
+),
+log_tbl AS 
+(
+SELECT *,
+       CASE
+           WHEN RN = 1 THEN LOG(CAST(B_VOL AS NUMERIC(16,12)))
+           WHEN RN%2=0 THEN LOG(1.0/CAST(B_VOL AS NUMERIC(16,12)))
+           ELSE LOG(CAST(B_VOL AS NUMERIC(16,12)))
+       END B_VOL_LOG
+FROM ranked_tbl
+)
+
+SELECT B_DATETIME,
+       B_Q_ID,
+       B_V_ID,
+       B_VOL,
+      CAST(EXP(SUM(B_VOL_LOG) OVER(ORDER BY B_DATETIME, B_Q_ID, B_V_ID, B_VOL RANGE UNBOUNDED PRECEDING)) AS NUMERIC(16,8)) AS sv
+FROM log_tbl
+````
+
