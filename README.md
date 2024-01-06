@@ -432,3 +432,30 @@ SELECT B_DATETIME,
 FROM log_tbl
 ````
 
+## Задача 109
+
+Вывести:
+
+1. Названия всех квадратов черного или белого цвета.
+   
+2. Общее количество белых квадратов.
+   
+3. Общее количество черных квадратов.
+ 
+
+```` sql
+WITH fill_flow AS
+(SELECT 
+        q.Q_NAME q_name,
+        SUM(COALESCE(b.B_VOL,0)) as ttl_vol
+FROM utQ q LEFT JOIN utB b ON q.Q_ID=b.B_Q_ID
+GROUP BY q.Q_ID, q.Q_name
+HAVING SUM(COALESCE(b.B_VOL,0)) = 765 OR SUM(COALESCE(b.B_VOL,0))=0)
+
+SELECT q_name,
+       (SELECT COUNT(q_name) FROM fill_flow WHERE ttl_vol = 765) AS Whites,
+       (SELECT COUNT(q_name) FROM fill_flow WHERE ttl_vol = 0) AS Blacks
+
+FROM fill_flow
+
+````
